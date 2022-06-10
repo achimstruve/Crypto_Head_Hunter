@@ -11,7 +11,7 @@ contract CandidateNFT is ERC721 {
     // Initialize Skills
     struct Skill {
         bytes32 name;
-        uint256 level;
+        uint256 experience;
     }
     Skill public Solidity;
     Skill public Rust;
