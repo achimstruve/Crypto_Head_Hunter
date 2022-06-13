@@ -11,59 +11,61 @@ contract CandidateNFT is ERC721, Ownable {
 
     // Internal information
     struct Internal_Info {
-        bytes32 name;
-        bytes32 description;
+        string name;
+        string description;
     }
-    Internal_Info[] internal Internal_Informations;
 
     // Skills
     struct Skill {
-        bytes32 name;
+        string name;
         uint256 experience;
     }
-    Skill[] public Skills;
 
     // Mappings
-    mapping(uint256 => Internal_Informations) tokenIdToInternalInfo;
-    mapping(uint256 => Skills) tokenIdToSkills;
-    mapping(uint256 => address) tokenIdToHolder;
+    mapping (uint256 => Internal_Info[]) internal tokenIdToInternalInfo;
+    mapping (uint256 => Skill[]) internal tokenIdToSkills;
 
-    constructor() ERC721("Candidate", "CNFT") {
-        tokenId = 0;
+    constructor() ERC721("Candidate", "CNDT") {
     }
 
-    function createInternalInfo(bytes32 _name, bytes32 _description)
+    function createInternalInfo(string memory _name, string memory _description, uint256 _tokenId)
         public
-        payable
         onlyOwner
     {
         Internal_Info memory newInfo;
         newInfo.name = _name;
         newInfo.description = _description;
-        Internal_Info[].push(newInfo);
+        tokenIdToInternalInfo[_tokenId].push(newInfo);
     }
 
-    function getInternalInfo()
+    function getInternalInfo(uint256 _tokenId)
         public
-        payable
+        view
         onlyOwner
-        returns (bytes32[], bytes32[])
+        returns (Internal_Info[] memory)
     {
-        return Internal_Info;
+        Internal_Info[] memory internalInfo = tokenIdToInternalInfo[_tokenId];
+        return internalInfo;
     }
 
-    function createSkill(bytes32 _name, uint256 _experience)
+    function createSkill(string memory _name, uint256 _experience, uint256 _tokenId)
         public
-        payable
         onlyOwner
     {
         Skill memory newSkill;
         newSkill.name = _name;
         newSkill.experience = _experience;
-        Skills.push(newSkill);
+        tokenIdToSkills[_tokenId].push(newSkill);
     }
 
-    function getSkills() public payable onlyOwner returns (Skill) {
-        return Skills;
+    function getSkills(uint256 _tokenId) public view onlyOwner returns (Skill[] memory) {
+        Skill[] memory skills = tokenIdToSkills[_tokenId];
+        return skills;
+    }
+
+    function _mintCandidate(address _to, uint256 _tokenId, string memory _infoName, string memory _description, string memory _skillName, uint256 _experience) public payable {
+        createInternalInfo(_infoName, _description, _tokenId);
+        createSkill(_skillName, _experience, _tokenId);
+        _safeMint(_to, _tokenId, "");
     }
 }
