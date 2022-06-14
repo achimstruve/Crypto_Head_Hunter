@@ -33,6 +33,7 @@ contract CandidateNFT is ERC721, Ownable {
     mapping(uint256 => Skill[]) internal tokenIdToSkills;
 
     constructor(address _priceFeed) ERC721("Candidate", "CNDT") {
+        tokenId = 0;
         priceFeed = AggregatorV3Interface(_priceFeed);
         minUSDprice = 50; // Set the minimum USD price for one candidate mint to $50
         creatorAddress = msg.sender;
@@ -48,8 +49,12 @@ contract CandidateNFT is ERC721, Ownable {
         minUSDprice = _newPrice;
     }
 
-    function _changeCreatorAddress(address _newCreator) public onlyCreator{
+    function _setCreatorAddress(address _newCreator) public onlyCreator{
         creatorAddress = _newCreator;
+    }
+
+    function _setPriceFeed(address _priceFeed) public onlyCreator{
+        priceFeed = AggregatorV3Interface(_priceFeed);
     }
 
     // Candidate Properties //
@@ -100,8 +105,6 @@ contract CandidateNFT is ERC721, Ownable {
     // Minting //
 
     function _mintCandidate(
-        address _to,
-        uint256 _tokenId,
         string memory _infoName,
         string memory _description,
         string memory _skillName,
@@ -109,9 +112,10 @@ contract CandidateNFT is ERC721, Ownable {
     ) public payable {
         require(getConversionRate(msg.value)/10**18 >= minUSDprice, "You have to spend more to mint this NFT!");
         addressToAmountSpent[msg.sender] = msg.value;
-        createInternalInfo(_infoName, _description, _tokenId);
-        createSkill(_skillName, _experience, _tokenId);
-        _safeMint(_to, _tokenId, "");
+        createInternalInfo(_infoName, _description, tokenId);
+        createSkill(_skillName, _experience, tokenId);
+        _safeMint(msg.sender, tokenId, "");
+        tokenId += 1;
     }
 
     
